@@ -1,72 +1,14 @@
 version: '3'
 
 services:
-  openmrs-facilityA-mysql:
-    restart: "always"
-    image: mysql:5.6
-    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
-    environment:
-      MYSQL_DATABASE: 'facilityA'
-      MYSQL_ROOT_PASSWORD: 'Admin123'
-      MYSQL_USER: 'root2'
-      MYSQL_PASSWORD: 'Admin123'
-    ports:
-      - "3307:3306"
-    healthcheck:
-      test: "exit 0"
-    volumes:
-      - openmrs-facilityA-mysql-data:/var/lib/mysql
-
-  openmrs-facilityA:
+  openmrs-reference-app:
     restart: "always"
     image: openmrs/openmrs-reference-application-distro:demo
-    depends_on:
-      - openmrs-facilityA-mysql
     ports:
-      - "8072:8080"
+      - "8087:8080"
     environment:
-      DB_DATABASE: 'facilityA'
-      DB_HOST: openmrs-facilityA-mysql
-      DB_USERNAME: 'root2'
-      DB_PASSWORD: 'Admin123'
-      DB_CREATE_TABLES: 'true'
-      DB_AUTO_UPDATE: 'true'
-      MODULE_WEB_ADMIN: 'true'
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
-      timeout: 20s
-    volumes:
-      - openmrs-facilityA-mysql-data:/usr/local/tomcat/.OpenMRS/
-      - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in data
-      - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in data
-      
-  openmrs-facilityB-mysql:
-    restart: "always"
-    image: mysql:5.6
-    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
-    environment:
-      MYSQL_DATABASE: 'facilityB'
-      MYSQL_ROOT_PASSWORD: 'Admin123'
-      MYSQL_USER: 'root'
-      MYSQL_PASSWORD: 'Admin123'
-    ports:
-      - "3308:3306"
-    healthcheck:
-      test: "exit 0"
-    volumes:
-      - openmrs-facilityA-mysql-data:/var/lib/mysql
- 
-  #facilityB OpenMRS instance
-  openmrs-facilityB:
-    restart: "always"
-    image: openmrs/openmrs-reference-application-distro:demo
-    depends_on:
-      - openmrs-facilityB-mysql
-    ports:
-      - "8082:8080"
-    environment:
-      DB_DATABASE: 'facilityB'
-      DB_HOST: openmrs-facilityB-mysql
+      DB_DATABASE: 'openmrs'
+      DB_HOST: openmrs-reference-mysql
       DB_USERNAME: 'root'
       DB_PASSWORD: 'Admin123'
       DB_CREATE_TABLES: 'true'
@@ -76,9 +18,26 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
       timeout: 20s
     volumes:
-      - openmrs-facilityB-mysql-data:/usr/local/tomcat/.OpenMRS/
+      - openmrs-reference-mysql-data:/usr/local/tomcat/.OpenMRS/
       - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in data
       - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in data
+
+  openmrs-reference-mysql:
+    restart: "always"
+    image: mysql:5.6
+    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
+    environment:
+      MYSQL_DATABASE: 'openmrs'
+      MYSQL_ROOT_PASSWORD: 'Admin123'
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: 'Admin123'
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: "exit 0"
+    volumes:
+      - ./dbdump:/docker-entrypoint-initdb.d
+      - openmrs-reference-mysql-data:/var/lib/mysql
 
   mongo-db:
     container_name: mongo-db
@@ -124,8 +83,7 @@ services:
       retries: 3
 
 volumes:
-  openmrs-facilityA-mysql-data:
-  openmrs-facilityB-mysql-data:
+  openmrs-reference-mysql-data:
   mongo-data:
 
 networks:

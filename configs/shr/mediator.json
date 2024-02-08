@@ -2,7 +2,7 @@
   "urn": "urn:mediator:cdr",
   "version": "1.2.1",
   "name": "SHR",
-  "description": "Shared Health Record",
+  "description": "OpenMRS Shared Health Record",
   "defaultChannelConfig": [
     {
       "methods": [

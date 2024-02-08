@@ -21,8 +21,8 @@
       "roles": [
         "emr"
       ],
-      "clientID": "isanteplus",
-      "name": "iSantePlus Demo",
+      "clientID": "openmrs",
+      "name": "OpenMRS Demo",
       "passwordAlgorithm": "sha512",
       "passwordSalt": "a31ca7a31c216138910953ae75530635",
       "passwordHash": "b03433407c82dcf33300ec1ec36dfbd4caf6c8851c5b4ba6444c219b72934507fa075f51a0d4c2495ec00e24be2100145b975e39811cd476b96599b7028af609"

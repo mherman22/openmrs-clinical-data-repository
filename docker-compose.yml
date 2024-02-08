@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=docker
-      - HAPI_FHIR_URL=http://opencr-fhir:8080/fhir/metadata
+      - HAPI_FHIR_URL=http://opencr-fhir:8065/fhir/metadata
     networks:
       - cdr
     volumes:
@@ -32,7 +32,7 @@ services:
     ports:
       - 8090:8080
     healthcheck:
-      test: "apt-get install -y curl; curl -sS http://opencr-fhir:8080/fhir/metadata || exit 1"
+      test: "apt-get install -y curl; curl -sS http://opencr-fhir:8065/fhir/metadata || exit 1"
       interval: 30s
       timeout: 240s
       retries: 3
@@ -139,6 +139,7 @@ services:
     healthcheck:
       test: "exit 0"
     volumes:
+      - ./configs/openmrs/mysql.cnf:/etc/mysql/conf.d/custom.cnf # mysql config preconfigured to allow binlog/debezium
       - openmrs-db-mysql-data:/var/lib/mysql
 
   #OpenMRS instance
@@ -149,10 +150,11 @@ services:
       - openmrs-db-mysql
     ports:
       - "8062:8080"
+      - "1044:1044"
     environment:
-      DB_DATABASE: 'facilityA'
+      DB_DATABASE: 'openmrs'
       DB_HOST: openmrs-db-mysql
-      DB_USERNAME: 'root'
+      DB_USERNAME: 'mysqluser'
       DB_PASSWORD: 'Admin123'
       DB_CREATE_TABLES: 'true'
       DB_AUTO_UPDATE: 'true'
@@ -187,15 +189,15 @@ services:
     container_name: openhim-console
     image: jembi/openhim-console:latest
     restart: unless-stopped
-    volumes:
-      - ./configs/openhim-console/default.json:/usr/share/nginx/html/config/default.json
-    healthcheck:
-      test: "curl -sS http://openhim-console || exit 1"
-      interval: 30s
-      timeout: 30s
-      retries: 3
     networks:
       - cdr
+    ports:
+      - "9000:80"
+    healthcheck:
+     test: "curl -sS http://openhim-console || exit 1"
+     interval: 30s
+     timeout: 30s
+     retries: 3
 
   mongo-db:
     container_name: mongo-db
@@ -228,7 +230,7 @@ services:
       # data is the directory which you want to persist the generated parquet files
       # - ./configs/streaming-pipeline/parquet:/tmp
     environment:
-      - OPENMRS_URL=http://isanteplus:8080/openmrs
+      - OPENMRS_URL=http://localhost:8080/openmrs
       - OPENMRS_USERNAME=admin
       - OPENMRS_PASSWORD=Admin123
       - SINK_URL=http://openhim-core:5001/SHR/fhir
@@ -249,7 +251,7 @@ services:
     container_name: wait-for-openmrs
     image: ghcr.io/i-tech-uw/wait-for-openmrs-action:latest 
     command:
-    - "http://isanteplus:8080/openmrs"
+    - "http://localhost:8080/openmrs"
     - "20" 
     - "10000"
     networks:
@@ -258,12 +260,6 @@ services:
 volumes:
   openmrs-db-mysql-data:
   es-data-new:
-    driver: local
-  isanteplus-data:
-    driver: local
-  isanteplus1-data:
-    driver: local
-  isanteplus-data2:
     driver: local
   mysql-data:
     driver: local

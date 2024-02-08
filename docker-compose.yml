@@ -97,34 +97,6 @@ services:
     networks:
       - cdr
 
-  zookeeper:
-    container_name: zookeeper
-    image: "bitnami/zookeeper:latest"
-    hostname: zookeeper
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    networks:
-      - cdr
-    volumes:
-      - /data
-
-  kafka:
-    image: "bitnami/kafka:latest"
-    hostname: kafka
-    container_name: kafka
-    environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
-    networks:
-      - cdr
-    entrypoint: sh -c 'sleep 30 && /opt/bitnami/scripts/kafka/entrypoint.sh /opt/bitnami/scripts/kafka/run.sh' # prevent zookeeper conflict error
-    volumes:
-      - /bitnami/kafka
-
   openmrs-db-mysql:
     restart: "always"
     image: mysql:5.6
@@ -208,44 +180,6 @@ services:
      interval: 30s
      timeout: 30s
      retries: 3
-
-  openhim-config:
-    container_name: openhim-config
-    image: ghcr.io/i-tech-uw/openhim-config:v0.0.0
-    volumes:
-      - ./configs/openhim-core/initial-config.json:/app/test-openhim-config.json
-    networks:
-      - cdr
-    environment:
-      - INITIAL_PW=openhim-password
-      - ADMIN_PW=$ADMIN_PW
-      - API_URL=https://openhim-core:8080
-  
-  streaming-pipeline: 
-    image: ghcr.io/i-tech-uw/openmrs-fhir-analytics/streaming-binlog:latest
-    container_name: streaming-pipeline
-    healthcheck:
-      test: "exit 0"
-    volumes:
-      - ./configs/streaming-pipeline/config.json:/deployments/config.json
-      # data is the directory which you want to persist the generated parquet files
-      # - ./configs/streaming-pipeline/parquet:/tmp
-    environment:
-      - OPENMRS_URL=http://localhost:8080/openmrs
-      - OPENMRS_USERNAME=admin
-      - OPENMRS_PASSWORD=Admin123
-      - SINK_URL=http://openhim-core:5001/SHR/fhir
-      - SINK_USERNAME=shr-pipeline
-      - SINK_PASSWORD=shr-pipeline
-      - JDBC_FETCH_SIZE=10000
-      - JDBC_MAX_POOL_SIZE=50
-      - JDBC_INITIAL_POOL_SIZE=10
-      - JDBC_DRIVER_CLASS=com.mysql.cj.jdbc.Driver
-      # the 2 variable below should be same as volume mappings above
-      - PARQUET_PATH=
-      - FHIR_DEBEZIUM_CONFIG_PATH=/deployments/config.json
-    networks:
-      - cdr
   
   wait-for-openmrs:
     profiles: ['utility']
@@ -272,8 +206,6 @@ volumes:
   hapi-data:
     driver: local
   opencr-data-new:
-    driver: local
-  certs:
     driver: local
 
 networks:

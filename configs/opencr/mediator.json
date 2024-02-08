@@ -1,8 +1,8 @@
 {
-    "urn": "urn:mediator:cdr",
+    "urn": "urn:mediator:openmrs_cdr_clientregistry",
     "version": "1.1.2",
-    "name": "OpenMRS Client Registry",
-    "description": "OpenMRS Client Registry",
+    "name": "CDR CR",
+    "description": "OpenMRS CDR Client Registry",
     "config": {
         "fhirServer": {
             "username": "hapi",

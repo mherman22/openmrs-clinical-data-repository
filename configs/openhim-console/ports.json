@@ -4,7 +4,7 @@
     "protocol": "https",
     "host": "localhost",
     "port": 8060,
-    "title": "OpenMRS Admin Console",
+    "title": "OpenMRS CDR Admin Console",
     "footerTitle": "OPENMRS CDR ADMINISTRATION CONSOLE",
     "footerPoweredBy": "<a href='http://openhim.org/' target='_blank'>Powered by OpenHIM</a>",
     "loginBanner": "",

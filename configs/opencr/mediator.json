@@ -1,8 +1,8 @@
 {
-    "urn": "urn:mediator:haiti_clientregistry",
+    "urn": "urn:mediator:cdr",
     "version": "1.1.2",
-    "name": "Client Registry",
-    "description": "Haiti Client Registry",
+    "name": "OpenMRS Client Registry",
+    "description": "OpenMRS Client Registry",
     "config": {
         "fhirServer": {
             "username": "hapi",

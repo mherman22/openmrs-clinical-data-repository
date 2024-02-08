@@ -8,7 +8,7 @@
       "password": "Admin123",
       "apiURL": "https://openhim-core:8080",
       "trustSelfSigned": true,
-      "urn": "urn:mediator:haiti_sharedhealthrecord"
+      "urn": "urn:mediator:cdr"
     },
     "client": {
       "id": "openshr",

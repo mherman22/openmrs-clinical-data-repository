@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=docker
-      - HAPI_FHIR_URL=http://opencr-fhir:8065/fhir/metadata
+      - HAPI_FHIR_URL=http://opencr-fhir:8080/fhir/metadata
     networks:
       - cdr
     volumes:
@@ -32,7 +32,7 @@ services:
     ports:
       - 8090:8080
     healthcheck:
-      test: "apt-get install -y curl; curl -sS http://opencr-fhir:8065/fhir/metadata || exit 1"
+      test: "apt-get install -y curl; curl -sS http://opencr-fhir:8080/fhir/metadata || exit 1"
       interval: 30s
       timeout: 240s
       retries: 3
@@ -142,7 +142,6 @@ services:
       - ./configs/openmrs/mysql.cnf:/etc/mysql/conf.d/custom.cnf # mysql config preconfigured to allow binlog/debezium
       - openmrs-db-mysql-data:/var/lib/mysql
 
-  #OpenMRS instance
   openmrs-facilityA:
     restart: "always"
     image: openmrs/openmrs-reference-application-distro:demo
@@ -261,13 +260,10 @@ services:
 
 volumes:
   openmrs-db-mysql-data:
+    driver: local
+  openmrs-db-mysql-data2:
+    driver: local
   es-data-new:
-    driver: local
-  mysql-data:
-    driver: local
-  mysql-data2:
-    driver: local
-  mysql1-data:
     driver: local
   mongo-data:
     driver: local
@@ -278,10 +274,6 @@ volumes:
   opencr-data-new:
     driver: local
   certs:
-    driver: local
-  letsencrypt: 
-    driver: local
-  nginx-data: 
     driver: local
 
 networks:

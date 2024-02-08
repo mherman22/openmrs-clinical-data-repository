@@ -7,7 +7,7 @@
         "fhirServer": {
             "username": "hapi",
             "password": "hapi",
-            "baseURL": "http://opencr-fhir:8065/fhir"
+            "baseURL": "http://opencr-fhir:8080/fhir"
         },
         "elastic": {
             "server": "http://es:9200",
@@ -29,7 +29,7 @@
             "template": [
                 {
                     "type": "string",
-                    "description": "The base URL (e.g. http://localhost:8065/hapi/fhir)",
+                    "description": "The base URL (e.g. http://localhost:8080/hapi/fhir)",
                     "displayName": "Base URL",
                     "param": "baseURL"
                 },

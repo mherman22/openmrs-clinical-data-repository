@@ -5,12 +5,12 @@
   },
   "app": {
     "port": 3000,
-    "installed": false
+    "installed": true
   },
   "mediator": {
     "api": {
       "username": "root@openhim.org",
-      "password": "openhim",
+      "password": "Admin123",
       "apiURL": "https://openhim-core:8080",
       "trustSelfSigned": true,
       "urn": "urn:mediator:cdr"
@@ -23,7 +23,7 @@
   "fhirServer": {
     "username": "hapi",
     "password": "hapi",
-    "baseURL": "http://opencr-fhir:8065/fhir"
+    "baseURL": "http://opencr-fhir:8080/fhir"
   },
   "elastic": {
     "server": "http://es:9200",
@@ -109,7 +109,7 @@
     }
   },
   "sync": {
-    "lastFHIR2ESSync": "2022-08-18T23:12:22"
+    "lastFHIR2ESSync": "2024-02-08T19:18:28"
   },
   "__comments": {
     "matching.tool": "this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch"

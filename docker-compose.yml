@@ -1,14 +1,157 @@
-version: '3'
+version: '3.8'
 
 services:
-  openmrs-reference-app:
+  opencr:
+    container_name: opencr
+    hostname: opencr
+    image: intrahealth/opencr:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=docker
+      - HAPI_FHIR_URL=http://opencr-fhir:8080/fhir/metadata
+    networks:
+      - cdr
+    volumes:
+      - ./configs/opencr/config.json:/src/server/config/config_docker.json
+      - ./configs/opencr/mediator.json:/src/server/config/mediator.json
+      - ./configs/opencr/decisionRules.json:/src/server/config/decisionRules.json
+      - ./configs/opencr/PatientRelationship.json:/src/resources/Relationships/PatientRelationship.json
+
+  opencr-fhir:
+    image: "hapiproject/hapi:latest"
+    container_name: opencr-fhir
+    hostname: opencr-fhir
+    restart: unless-stopped
+    env_file:
+     - configs/opencr/.env   
+    volumes:
+      - opencr-data-new:/data/hapi
+      - ./configs/opencr/application.yml:/data/hapi/application.yaml
+    networks:
+      - cdr
+    ports:
+      - 8090:8080
+    healthcheck:
+      test: "apt-get install -y curl; curl -sS http://opencr-fhir:8080/fhir/metadata || exit 1"
+      interval: 30s
+      timeout: 240s
+      retries: 3
+
+  opencr-es:
+    container_name: opencr-es
+    hostname: es
+    image: intrahealth/elasticsearch:latest
+    restart: unless-stopped
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - es-data-new:/usr/share/elasticsearch/data
+    networks:
+      - cdr
+
+  shr:
+    container_name: shr
+    hostname: shr
+    image: mherman22/shared-health-record:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=docker
+    networks:
+      - cdr
+    volumes:
+      - ./configs/shr/config.json:/app/config/config_docker.json
+      - ./configs/shr/mediator.json:/app/config/mediator_docker.json
+  
+  shr-fhir:
+    image: "hapiproject/hapi:latest"
+    container_name: shr-fhir
+    hostname: shr-fhir
+    restart: unless-stopped
+    volumes:
+      - hapi-data:/data/hapi
+      - ./configs/shr/application.yml:/data/hapi/application.yaml
+    networks:
+      - cdr
+    env_file:
+      - configs/shr/.env
+    healthcheck:
+      test: "apt-get install -y curl; curl -sS http://localhost:8080/fhir/metadata || exit 1"
+      interval: 30s
+      timeout: 240s
+      retries: 5
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    hostname: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_MULTIPLE_DATABASES: opencr,shr
+      POSTGRES_PASSWORD: ${PG_PW-postgres}
+    volumes:
+      - /var/lib/postgresql/data/
+      - ./configs/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - cdr
+
+  zookeeper:
+    container_name: zookeeper
+    image: "bitnami/zookeeper:latest"
+    hostname: zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - cdr
+    volumes:
+      - /data
+
+  kafka:
+    image: "bitnami/kafka:latest"
+    hostname: kafka
+    container_name: kafka
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    networks:
+      - cdr
+    entrypoint: sh -c 'sleep 30 && /opt/bitnami/scripts/kafka/entrypoint.sh /opt/bitnami/scripts/kafka/run.sh' # prevent zookeeper conflict error
+    volumes:
+      - /bitnami/kafka
+
+  openmrs-db-mysql:
+    restart: "always"
+    image: mysql:5.6
+    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
+    environment:
+      MYSQL_DATABASE: 'openmrs'
+      MYSQL_ROOT_PASSWORD: 'debezium'
+      MYSQL_USER: 'mysqluser'
+      MYSQL_PASSWORD: 'Admin123'
+    ports:
+      - "3309:3306"
+    healthcheck:
+      test: "exit 0"
+    volumes:
+      - openmrs-db-mysql-data:/var/lib/mysql
+
+  #OpenMRS instance
+  openmrs-facilityA:
     restart: "always"
     image: openmrs/openmrs-reference-application-distro:demo
+    depends_on:
+      - openmrs-db-mysql
     ports:
-      - "8087:8080"
+      - "8062:8080"
     environment:
-      DB_DATABASE: 'openmrs'
-      DB_HOST: openmrs-reference-mysql
+      DB_DATABASE: 'facilityA'
+      DB_HOST: openmrs-db-mysql
       DB_USERNAME: 'root'
       DB_PASSWORD: 'Admin123'
       DB_CREATE_TABLES: 'true'
@@ -18,73 +161,130 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
       timeout: 20s
     volumes:
-      - openmrs-reference-mysql-data:/usr/local/tomcat/.OpenMRS/
+      - openmrs-db-mysql-data:/usr/local/tomcat/.OpenMRS/
       - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in data
       - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in data
-
-  openmrs-reference-mysql:
-    restart: "always"
-    image: mysql:5.6
-    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
-    environment:
-      MYSQL_DATABASE: 'openmrs'
-      MYSQL_ROOT_PASSWORD: 'Admin123'
-      MYSQL_USER: 'root'
-      MYSQL_PASSWORD: 'Admin123'
-    ports:
-      - "3307:3306"
-    healthcheck:
-      test: "exit 0"
-    volumes:
-      - ./dbdump:/docker-entrypoint-initdb.d
-      - openmrs-reference-mysql-data:/var/lib/mysql
-
-  mongo-db:
-    container_name: mongo-db
-    image: mongo:4.0
-    networks:
-      - cdr
-    volumes:
-      - "mongo-data:/data/db"
-    restart: unless-stopped
 
   openhim-core:
     container_name: openhim-core
     image: jembi/openhim-core:latest
     restart: unless-stopped
     environment:
-      mongo_url: "mongodb://mongo-db/openhim-development"
-      mongo_atnaUrl: "mongodb://mongo-db/openhim-development"
+      mongo_url: "mongodb://mongo-db/openhim"
+      mongo_atnaUrl: "mongodb://mongo-db/openhim"
       NODE_ENV: "development"
-    ports:
-      - "8080:8080"
-      - "5000:5000"
-      - "5001:5001"
+    healthcheck:
+      test: "node /healthcheck.js"
+      interval: 20s
+      timeout: 40s
+      retries: 5
     networks:
       - cdr
-    healthcheck:
-      test: "curl -sSk https://openhim-core:8080/heartbeat || exit 1"
-      interval: 30s
-      timeout: 30s
-      retries: 3
+    volumes:
+      - ./configs/openhim-core/healthcheck.js:/healthcheck.js
 
   openhim-console:
     container_name: openhim-console
     image: jembi/openhim-console:latest
     restart: unless-stopped
-    networks:
-      - cdr
-    ports:
-      - "9000:80"
+    volumes:
+      - ./configs/openhim-console/default.json:/usr/share/nginx/html/config/default.json
     healthcheck:
       test: "curl -sS http://openhim-console || exit 1"
       interval: 30s
       timeout: 30s
       retries: 3
+    networks:
+      - cdr
+
+  mongo-db:
+    container_name: mongo-db
+    image: mongo:3.4
+    volumes:
+      - "mongo-data:/data/db"
+    restart: unless-stopped
+    networks:
+      - cdr
+
+  openhim-config:
+    container_name: openhim-config
+    image: ghcr.io/i-tech-uw/openhim-config:v0.0.0
+    volumes:
+      - ./configs/openhim-core/initial-config.json:/app/test-openhim-config.json
+    networks:
+      - cdr
+    environment:
+      - INITIAL_PW=openhim-password
+      - ADMIN_PW=$ADMIN_PW
+      - API_URL=https://openhim-core:8080
+  
+  streaming-pipeline: 
+    image: ghcr.io/i-tech-uw/openmrs-fhir-analytics/streaming-binlog:latest
+    container_name: streaming-pipeline
+    healthcheck:
+      test: "exit 0"
+    volumes:
+      - ./configs/streaming-pipeline/config.json:/deployments/config.json
+      # data is the directory which you want to persist the generated parquet files
+      # - ./configs/streaming-pipeline/parquet:/tmp
+    environment:
+      - OPENMRS_URL=http://isanteplus:8080/openmrs
+      - OPENMRS_USERNAME=admin
+      - OPENMRS_PASSWORD=Admin123
+      - SINK_URL=http://openhim-core:5001/SHR/fhir
+      - SINK_USERNAME=shr-pipeline
+      - SINK_PASSWORD=shr-pipeline
+      - JDBC_FETCH_SIZE=10000
+      - JDBC_MAX_POOL_SIZE=50
+      - JDBC_INITIAL_POOL_SIZE=10
+      - JDBC_DRIVER_CLASS=com.mysql.cj.jdbc.Driver
+      # the 2 variable below should be same as volume mappings above
+      - PARQUET_PATH=
+      - FHIR_DEBEZIUM_CONFIG_PATH=/deployments/config.json
+    networks:
+      - cdr
+  
+  wait-for-openmrs:
+    profiles: ['utility']
+    container_name: wait-for-openmrs
+    image: ghcr.io/i-tech-uw/wait-for-openmrs-action:latest 
+    command:
+    - "http://isanteplus:8080/openmrs"
+    - "20" 
+    - "10000"
+    networks:
+    - cdr
 
 volumes:
-  openmrs-reference-mysql-data:
+  openmrs-db-mysql-data:
+  es-data-new:
+    driver: local
+  isanteplus-data:
+    driver: local
+  isanteplus1-data:
+    driver: local
+  isanteplus-data2:
+    driver: local
+  mysql-data:
+    driver: local
+  mysql-data2:
+    driver: local
+  mysql1-data:
+    driver: local
   mongo-data:
+    driver: local
+  shr:
+    driver: local
+  hapi-data:
+    driver: local
+  opencr-data-new:
+    driver: local
+  certs:
+    driver: local
+  letsencrypt: 
+    driver: local
+  nginx-data: 
+    driver: local
 
 networks:
   cdr:

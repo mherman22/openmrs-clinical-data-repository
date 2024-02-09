@@ -1,0 +1,14 @@
+version: '3.8'
+# wip set up of an shr
+services:
+    shr:
+    container_name: shr
+    hostname: shr
+    image: ghcr.io/i-tech-uw/shared-health-record:latest
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=docker
+    volumes:
+      - ./config/config_docker.json:/app/config/config_docker.json
+      - ./config/config_docker.json:/app/config/mediator_docker.json

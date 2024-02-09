@@ -8,8 +8,8 @@
       "surname": "User",
       "email": "root@openhim.org",
       "passwordAlgorithm": "sha512",
-      "passwordHash": "3ffa5a209fad0151388a1fc0eb2d93cfb95648c38a79ee19b8c19811ee9256a49dfc929afd1f81f35533553044d2fc19921939f9b53ef5024f9ae0486aecca05",
-      "passwordSalt": "b9bce89f512c986981512a91a9eeb5ef",
+      "passwordHash": "4d0b24ccade22df6d154778cd66baf04288aae26df97a961f3ea3dd616fbe06dcebecc9bbe4ce93c8e12dca21e5935c08b0954534892c568b8c12b92f26a2448",
+      "passwordSalt": "$2y$10$xVbp.m2e8MdO3VZWeyLnQu0/2df3P937303Q72B1DsOWhdEDZ0NWa",
       "expiry": null,
       "locked": false,
       "tokenType": null,
@@ -22,10 +22,19 @@
         "emr"
       ],
       "clientID": "openmrs",
-      "name": "OpenMRS Demo",
+      "name": "admin",
       "passwordAlgorithm": "sha512",
-      "passwordSalt": "a31ca7a31c216138910953ae75530635",
-      "passwordHash": "b03433407c82dcf33300ec1ec36dfbd4caf6c8851c5b4ba6444c219b72934507fa075f51a0d4c2495ec00e24be2100145b975e39811cd476b96599b7028af609"
+      "passwordSalt": "$2y$10$xVbp.m2e8MdO3VZWeyLnQu0/2df3P937303Q72B1DsOWhdEDZ0NWa",
+      "passwordHash": "4d0b24ccade22df6d154778cd66baf04288aae26df97a961f3ea3dd616fbe06dcebecc9bbe4ce93c8e12dca21e5935c08b0954534892c568b8c12b92f26a2448"
+    },    {
+      "roles": [
+        "emr"
+      ],
+      "clientID": "openmrsB",
+      "name": "admin",
+      "passwordAlgorithm": "sha512",
+      "passwordSalt": "$2y$10$xVbp.m2e8MdO3VZWeyLnQu0/2df3P937303Q72B1DsOWhdEDZ0NWa",
+      "passwordHash": "4d0b24ccade22df6d154778cd66baf04288aae26df97a961f3ea3dd616fbe06dcebecc9bbe4ce93c8e12dca21e5935c08b0954534892c568b8c12b92f26a2448"
     },
     {
       "roles": [

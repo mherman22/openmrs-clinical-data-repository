@@ -99,6 +99,7 @@ services:
     networks:
       - cdr
 
+#OpenMRS facilityA
   openmrs-db-mysql:
     restart: "always"
     image: mysql:5.6
@@ -137,6 +138,45 @@ services:
       timeout: 20s
     volumes:
       - openmrs-db-mysql-data:/usr/local/tomcat/.OpenMRS/
+      - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in data
+      - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in data
+
+#OpenMRS facilityB instance
+  openmrs-referenceapplication-mysql:
+    restart: "always"
+    image: mysql:5.6
+    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DB:-openmrs}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
+      MYSQL_USER: ${MYSQL_USER:-openmrs}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
+    healthcheck:
+      test: "exit 0"
+    volumes:
+      - ./configs/uat/mysql.cnf:/etc/mysql/conf.d/custom.cnf # mysql config preconfigured to allow binlog/debezium- ./dbdump:/docker-entrypoint-initdb.d
+      - openmrs-referenceapplication-mysql-data:/var/lib/mysql  
+
+  openmrs-referenceapplication:
+    restart: "always"
+    image: openmrs/openmrs-reference-application:${OPENMRS_VERSION:-demo}
+    depends_on:
+      - openmrs-referenceapplication-mysql
+    ports:
+      - "8083:8080"
+    environment:
+      OMRS_DB_NAME: ${MYSQL_DB:-openmrs}
+      OMRS_DB_HOSTNAME: openmrs-referenceapplication-mysql
+      OMRS_DB_USERNAME: ${MYSQL_USER:-openmrs}
+      OMRS_DB_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
+      OMRS_CREATE_TABLES: 'true'
+      OMRS_AUTO_UPDATE_DATABASE: 'true'
+      OMRS_MODULE_WEB_ADMIN: 'true'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
+      timeout: 20s
+    volumes:
+      - openmrs-referenceapplication-mysql-data:/usr/local/tomcat/.OpenMRS/
       - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in data
       - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in data
 
@@ -220,6 +260,10 @@ volumes:
   hapi-data:
     driver: local
   opencr-data-new:
+    driver: local
+  openmrs-referenceapplication-mysql-data:
+    driver: local
+  openmrs-referenceapplication-mysql-data2:
     driver: local
 
 networks:

@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  opencr:
+    container_name: opencr
+    hostname: opencr
+    image: intrahealth/opencr:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=docker
+      - HAPI_FHIR_URL=http://opencr-fhir:8080/fhir/metadata
+    networks:
+      - cdr
+    volumes:
+      - ./configs/opencr/config_docker.json:/src/server/config/config_docker.json
+      - ./configs/opencr/mediator.json:/src/server/config/mediator.json
+      - ./configs/opencr/decisionRules.json:/src/server/config/decisionRules.json
+      - ./configs/opencr/PatientRelationship.json:/src/resources/Relationships/PatientRelationship.json
+
+  opencr-fhir:
+    image: "hapiproject/hapi:latest"
+    container_name: opencr-fhir
+    hostname: opencr-fhir
+    restart: unless-stopped
+    env_file:
+     - configs/opencr/.env   
+    volumes:
+      - opencr-data-new:/data/hapi
+      - ./configs/opencr/application.yml:/data/hapi/application.yaml
+    networks:
+      - cdr
+    ports:
+      - 8090:8080
+    healthcheck:
+      test: "exit 0"
+
+  opencr-es:
+    container_name: opencr-es
+    hostname: es
+    image: intrahealth/elasticsearch:latest
+    restart: unless-stopped
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - es-data-new:/usr/share/elasticsearch/data
+    networks:
+      - cdr
+
+  mongo-db:
+    container_name: mongo-db
+    image: mongo:4.0
+    networks:
+      - cdr
+    volumes:
+      - "mongo-data:/data/db"
+    restart: unless-stopped
+
+  openhim-core:
+    container_name: openhim-core
+    image: jembi/openhim-core:latest
+    restart: unless-stopped
+    environment:
+      mongo_url: "mongodb://mongo-db/openhim-development"
+      mongo_atnaUrl: "mongodb://mongo-db/openhim-development"
+      NODE_ENV: "development"
+    ports:
+      - "8080:8080"
+      - "5000:5000"
+      - "5001:5001"
+    networks:
+      - cdr
+    healthcheck:
+      test: "exit 0"
+
+  openhim-console:
+    container_name: openhim-console
+    image: jembi/openhim-console:latest
+    restart: unless-stopped
+    networks:
+      - cdr
+    ports:
+      - "9000:80"
+    healthcheck:
+     test: "exit 0"
+
+  openhim-config:
+    container_name: openhim-config
+    image: ghcr.io/i-tech-uw/openhim-config:v0.0.0
+    volumes:
+      - ./configs/openhim-core/initial-config.json:/app/test-openhim-config.json
+    networks:
+      - cdr
+    environment:
+      - INITIAL_PW=openhim-password
+      - ADMIN_PW=$ADMIN_PW
+      - API_URL=https://openhim-core:8080
+
+volumes:
+  es-data-new:
+    driver: local
+  mongo-data:
+    driver: local
+  hapi-data:
+    driver: local
+  opencr-data-new:
+    driver: local
+
+networks:
+  cdr:

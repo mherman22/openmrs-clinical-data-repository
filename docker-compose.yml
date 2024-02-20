@@ -6,6 +6,11 @@ services:
     hostname: opencr
     image: intrahealth/opencr:latest
     restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - opencr-fhir
+      - opencr-es
     environment:
       - NODE_ENV=docker
       - HAPI_FHIR_URL=http://opencr-fhir:8080/fhir/metadata
@@ -231,9 +236,9 @@ services:
     networks:
       - cdr
     environment:
-      - INITIAL_PW=openhim-password
+      - INITIAL_PW=Admin123
       - ADMIN_PW=$ADMIN_PW
-      - API_URL=https://openhim-core:8080
+      - API_URL=http://openhim-core:8080
   
   wait-for-openmrs:
     profiles: ['utility']

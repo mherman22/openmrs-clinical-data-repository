@@ -11,7 +11,7 @@ The communication between these systems utilizes the FHIR clinical data standard
 - Docker Engine: `https://docs.docker.com/compose/install/`
 - Docker Compose: `https://docs.docker.com/compose/install/`
 
-### Clone the Sedish Repository
+### Clone the CDR Repository
 `git clone https://github.com/mherman22/openmrs-module-cdr.git`
 
 ### Pull all containers

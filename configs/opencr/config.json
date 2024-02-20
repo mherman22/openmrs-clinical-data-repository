@@ -9,7 +9,7 @@
   },
   "mediator": {
     "api": {
-      "username": "root@openhim.org",
+      "username": "opencr",
       "password": "Admin123",
       "apiURL": "https://openhim-core:8080",
       "trustSelfSigned": true,

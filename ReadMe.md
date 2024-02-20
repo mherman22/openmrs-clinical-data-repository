@@ -1,4 +1,4 @@
-# Clinical Data Federation/Synchronization
+# OpenMRS Clinical Data Repository ( Federation/Synchronization)
 The attempt here is to create a central data repository that ensures FHIR-based synhronization of patient data between two instances of OpenMRS. The demonstrated communication workflow involves the following components:
 - Master Patient Index (MPI)
 - Shared Health Record (SHR)

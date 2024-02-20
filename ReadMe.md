@@ -6,6 +6,33 @@ The attempt here is to create a central data repository that ensures FHIR-based 
 
 The communication between these systems utilizes the FHIR clinical data standard for representing clinical data, and is orchestrated by the OpenHIM middleware.
 
+## Installation
+### Install Docker
+- Docker Engine: `https://docs.docker.com/compose/install/`
+- Docker Compose: `https://docs.docker.com/compose/install/`
+
+### Clone the Sedish Repository
+`git clone https://github.com/mherman22/openmrs-module-cdr.git`
+
+### Pull all containers
+`sudo docker-compose -f docker-compose.yml pull`
+
+### Start up Core containers
+`sudo docker-compose -f docker-compose.yml up -d openhim-core openhim-console mongo-db`
+
+### Start up Openhim-config container to load configurations into the mediator
+`sudo docker-compose -f docker-compose.yml up openhim-config`
+
+### Start up shr-fhir opencr-fhir opencr-es
+`sudo docker-compose -f docker-compose.yml up -d shr-fhir opencr-fhir opencr-es`
+
+### Start up Client Registry and Shared Health Record
+`sudo docker-compose -f docker-compose.yml up -d shr opencr`
+
+### Start up the OpenMRS instances
+1.  `sudo docker-compose -f docker-compose.yml up -d openmrs-db-mysql openmrs-facilityA`
+2. `sudo docker-compose -f docker-compose.yml up -d openmrs-referenceapplication-mysql openmrs-referenceapplication`
+
 ## login details for openhim-core 
 
 ```

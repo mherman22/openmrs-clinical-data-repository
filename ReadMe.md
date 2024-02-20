@@ -18,20 +18,32 @@ The communication between these systems utilizes the FHIR clinical data standard
 `sudo docker-compose -f docker-compose.yml pull`
 
 ### Start up Core containers
-`sudo docker-compose -f docker-compose.yml up -d openhim-core openhim-console mongo-db`
+```
+sudo docker-compose -f docker-compose.yml up -d openhim-core openhim-console mongo-db
+```
 
 ### Start up Openhim-config container to load configurations into the mediator
-`sudo docker-compose -f docker-compose.yml up openhim-config`
+```
+sudo docker-compose -f docker-compose.yml up openhim-config
+```
 
 ### Start up shr-fhir opencr-fhir opencr-es
-`sudo docker-compose -f docker-compose.yml up -d shr-fhir opencr-fhir opencr-es`
+```
+sudo docker-compose -f docker-compose.yml up -d shr-fhir opencr-fhir opencr-es
+```
 
 ### Start up Client Registry and Shared Health Record
-`sudo docker-compose -f docker-compose.yml up -d shr opencr`
+```
+sudo docker-compose -f docker-compose.yml up -d shr opencr
+```
 
 ### Start up the OpenMRS instances
-1.  `sudo docker-compose -f docker-compose.yml up -d openmrs-db-mysql openmrs-facilityA`
-2. `sudo docker-compose -f docker-compose.yml up -d openmrs-referenceapplication-mysql openmrs-referenceapplication`
+ ```
+sudo docker-compose -f docker-compose.yml up -d openmrs-db-mysql openmrs-facilityA
+```
+```
+sudo docker-compose -f docker-compose.yml up -d openmrs-referenceapplication-mysql openmrs-referenceapplication
+```
 
 ## login details for openhim-core 
 

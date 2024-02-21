@@ -9,14 +9,18 @@ The communication between these systems utilizes the FHIR clinical data standard
 
 ## Installation
 ### Install Docker
-- Docker Engine: `https://docs.docker.com/compose/install/`
-- Docker Compose: `https://docs.docker.com/compose/install/`
+- [Docker Engine](https://docs.docker.com/compose/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Clone the CDR Repository
-`git clone https://github.com/mherman22/openmrs-module-cdr.git`
+```
+git clone https://github.com/mherman22/openmrs-module-cdr.git
+```
 
 ### Pull all containers
-`sudo docker-compose -f docker-compose.yml pull`
+```
+sudo docker-compose -f docker-compose.yml pull
+```
 
 ### Start up Core containers
 ```

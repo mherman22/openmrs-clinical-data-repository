@@ -29,7 +29,7 @@ sudo docker-compose -f docker-compose.yml up -d openhim-core openhim-console mon
 
 ### Start up Openhim-config container to load configurations into the mediator
 ```
-sudo docker-compose -f docker-compose.yml up openhim-config
+sudo docker-compose -f docker-compose.yml up -d openhim-config
 ```
 
 ### Start up shr-fhir opencr-fhir opencr-es
